@@ -11,12 +11,39 @@ const BobaTracker = () => {
 
   // Real Bay Area boba shops with actual coordinates
   const shops = [
-    { id: 1, name: "Boba Guys", rating: 4.8, lat: 37.7753, lng: -122.4250, address: "Hayes Valley" },
-    { id: 2, name: "Tiger Sugar SF", rating: 4.7, lat: 37.7849, lng: -122.4078, address: "Polk St" },
-    { id: 3, name: "Teaspoon", rating: 4.6, lat: 37.7613, lng: -122.4350, address: "Castro" },
-    { id: 4, name: "Happy Lemon", rating: 4.5, lat: 37.7879, lng: -122.4074, address: "Downtown" },
-    { id: 5, name: "Gong Cha", rating: 4.6, lat: 37.7835, lng: -122.4084, address: "Polk St" },
-    { id: 6, name: "The Alley", rating: 4.7, lat: 37.7879, lng: -122.4051, address: "Union Square" },
+    // San Francisco
+    { id: 1, name: "Boba Guys", rating: 4.8, lat: 37.7753, lng: -122.4250, address: "Hayes Valley, SF", city: "SF" },
+    { id: 2, name: "Tiger Sugar SF", rating: 4.7, lat: 37.7849, lng: -122.4078, address: "Polk St, SF", city: "SF" },
+    { id: 3, name: "Teaspoon", rating: 4.6, lat: 37.7613, lng: -122.4350, address: "Castro, SF", city: "SF" },
+    { id: 4, name: "Happy Lemon", rating: 4.5, lat: 37.7879, lng: -122.4074, address: "Downtown SF", city: "SF" },
+    { id: 5, name: "Gong Cha", rating: 4.6, lat: 37.7835, lng: -122.4084, address: "Polk St, SF", city: "SF" },
+    { id: 6, name: "The Alley", rating: 4.7, lat: 37.7879, lng: -122.4051, address: "Union Square, SF", city: "SF" },
+
+    // Oakland
+    { id: 7, name: "Asha Tea House", rating: 4.7, lat: 37.8044, lng: -122.2712, address: "Oakland", city: "Oakland" },
+    { id: 8, name: "iTea", rating: 4.5, lat: 37.8072, lng: -122.2697, address: "Oakland Chinatown", city: "Oakland" },
+    { id: 9, name: "Boba Guys Oakland", rating: 4.8, lat: 37.8116, lng: -122.2713, address: "Uptown Oakland", city: "Oakland" },
+
+    // Berkeley
+    { id: 10, name: "Quickly", rating: 4.4, lat: 37.8697, lng: -122.2590, address: "Telegraph Ave, Berkeley", city: "Berkeley" },
+    { id: 11, name: "Purple Kow", rating: 4.6, lat: 37.8702, lng: -122.2678, address: "Downtown Berkeley", city: "Berkeley" },
+    { id: 12, name: "ShareTea Berkeley", rating: 4.5, lat: 37.8688, lng: -122.2585, address: "Berkeley", city: "Berkeley" },
+
+    // San Jose
+    { id: 13, name: "Tp Tea", rating: 4.7, lat: 37.3382, lng: -121.8863, address: "San Jose", city: "San Jose" },
+    { id: 14, name: "Meet Fresh", rating: 4.6, lat: 37.3229, lng: -121.9574, address: "Westgate, San Jose", city: "San Jose" },
+    { id: 15, name: "85°C Bakery", rating: 4.5, lat: 37.3185, lng: -121.9629, address: "San Jose", city: "San Jose" },
+
+    // Palo Alto
+    { id: 16, name: "Teaspoon PA", rating: 4.6, lat: 37.4419, lng: -122.1430, address: "Palo Alto", city: "Palo Alto" },
+    { id: 17, name: "Gong Cha PA", rating: 4.5, lat: 37.4449, lng: -122.1606, address: "University Ave, PA", city: "Palo Alto" },
+
+    // Daly City
+    { id: 18, name: "Quickly DC", rating: 4.4, lat: 37.6879, lng: -122.4702, address: "Daly City", city: "Daly City" },
+
+    // Mountain View
+    { id: 19, name: "Gong Cha MV", rating: 4.6, lat: 37.3861, lng: -122.0839, address: "Mountain View", city: "Mountain View" },
+    { id: 20, name: "ShareTea MV", rating: 4.5, lat: 37.3943, lng: -122.0765, address: "Castro St, MV", city: "Mountain View" },
   ].sort((a, b) => b.rating - a.rating);
 
   // Load Leaflet and Doto font
@@ -54,8 +81,8 @@ const BobaTracker = () => {
     const L = (window as any).L;
 
     const map = L.map(mapRef.current, {
-      center: [37.7749, -122.4194],
-      zoom: 13,
+      center: [37.5485, -122.1644], // Center of Bay Area
+      zoom: 10, // Wider view to see all cities
       zoomControl: true,
     });
 
