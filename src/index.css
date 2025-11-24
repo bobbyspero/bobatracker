@@ -20,3 +20,28 @@ body {
 .leaflet-popup-tip {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* Custom scrollbar for Game Boy theme */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f380f;
+  border: 2px solid #306230;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8bac0f;
+  border: 2px solid #306230;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9bbc0f;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8bac0f #0f380f;
+}

@@ -6,8 +6,10 @@ const BobaTracker = () => {
   const [lastDrink, setLastDrink] = useState(Date.now());
   const [mapLoaded, setMapLoaded] = useState(false);
   const [visitedShops, setVisitedShops] = useState<number[]>([]);
+  const [showFireworks, setShowFireworks] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const fireworksRef = useRef<HTMLCanvasElement>(null);
 
   // Real Bay Area boba shops with actual coordinates
   const shops = [
@@ -160,6 +162,98 @@ const BobaTracker = () => {
     };
   }, [visitedShops]);
 
+  // Fireworks animation when all shops visited
+  useEffect(() => {
+    if (visitedShops.length === 20) {
+      setShowFireworks(true);
+
+      const canvas = fireworksRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles: any[] = [];
+
+      class Particle {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        alpha: number;
+        color: string;
+
+        constructor(x: number, y: number) {
+          this.x = x;
+          this.y = y;
+          this.vx = (Math.random() - 0.5) * 8;
+          this.vy = (Math.random() - 0.5) * 8;
+          this.alpha = 1;
+          const colors = ['#9bbc0f', '#8bac0f', '#306230', '#fff'];
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += 0.1; // gravity
+          this.alpha -= 0.01;
+        }
+
+        draw(ctx: CanvasRenderingContext2D) {
+          ctx.save();
+          ctx.globalAlpha = this.alpha;
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      const createFirework = () => {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height * 0.5;
+        for (let i = 0; i < 50; i++) {
+          particles.push(new Particle(x, y));
+        }
+      };
+
+      const animate = () => {
+        ctx.fillStyle = 'rgba(15, 56, 15, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          particles[i].update();
+          particles[i].draw(ctx);
+
+          if (particles[i].alpha <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+
+        if (Math.random() < 0.1) {
+          createFirework();
+        }
+
+        requestAnimationFrame(animate);
+      };
+
+      animate();
+
+      const timeout = setTimeout(() => {
+        setShowFireworks(false);
+      }, 10000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [visitedShops.length]);
+
   const getAvatarMood = () => {
     if (happiness >= 80) return { emoji: '(◕‿◕)', status: 'EXCELLENT' };
     if (happiness >= 60) return { emoji: '(・ω・)', status: 'HAPPY' };
@@ -211,57 +305,93 @@ const BobaTracker = () => {
           </div>
         </div>
 
-        {/* Map */}
+        {/* Completion Message */}
+        {visitedShops.length === 20 && (
+          <div className="bg-[#0f380f] border-4 border-[#9bbc0f] p-6 mb-4 shadow-lg animate-pulse">
+            <div className="text-center">
+              <div className="text-4xl md:text-6xl mb-3">🎉🧋🎉</div>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#9bbc0f] mb-2">
+                QUEST COMPLETE!
+              </h2>
+              <p className="text-[#8bac0f] text-sm md:text-base">
+                You've visited all 20 boba shops across the Bay Area!
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Map & Shop List - Side by Side */}
         <div className="bg-[#0f380f] border-4 border-[#306230] p-4 md:p-6 mb-4 shadow-lg">
-          <h2 className="text-xl md:text-2xl font-bold text-[#9bbc0f] mb-4 tracking-wider">
-            MAP
-          </h2>
-          <div
-            ref={mapRef}
-            className="border-4 border-[#306230] h-64 md:h-96 bg-[#306230]"
-            style={{ zIndex: 1 }}
-          />
-          <div className="mt-3 text-xs text-[#8bac0f]">
-            Click markers to view shops • OpenStreetMap
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Map Section */}
+            <div className="flex-1">
+              <h2 className="text-xl md:text-2xl font-bold text-[#9bbc0f] mb-4 tracking-wider">
+                MAP
+              </h2>
+              <div
+                ref={mapRef}
+                className="border-4 border-[#306230] h-64 md:h-96 lg:h-[600px] bg-[#306230]"
+                style={{ zIndex: 1 }}
+              />
+              <div className="mt-3 text-xs text-[#8bac0f]">
+                Click markers to view shops • OpenStreetMap
+              </div>
+            </div>
+
+            {/* Shop List Section */}
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl md:text-2xl font-bold text-[#9bbc0f] tracking-wider">
+                  TOP RATED
+                </h2>
+                <div className="text-[#8bac0f] text-sm">
+                  {visitedShops.length}/20
+                </div>
+              </div>
+              <div className="border-4 border-[#306230] h-64 md:h-96 lg:h-[600px] overflow-y-auto bg-black p-2">
+                <div className="space-y-2">
+                  {shops.map((shop, index) => (
+                    <div
+                      key={shop.id}
+                      className="bg-[#306230] border-2 border-[#8bac0f] p-3 hover:bg-[#0f380f] hover:border-[#9bbc0f] transition-colors"
+                    >
+                      <div className="mb-2">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-[#9bbc0f] font-bold text-lg">#{index + 1}</span>
+                          <h3 className="text-[#9bbc0f] font-bold text-sm">
+                            {shop.name}
+                          </h3>
+                          {visitedShops.includes(shop.id) && (
+                            <span className="text-base">🧋</span>
+                          )}
+                        </div>
+                        <div className="text-[#8bac0f] text-xs mb-1">
+                          {'★'.repeat(Math.floor(shop.rating))} {shop.rating}
+                        </div>
+                        <div className="text-[#8bac0f] text-xs">{shop.address}</div>
+                      </div>
+                      <button
+                        onClick={() => logDrink(shop.id)}
+                        className="bg-[#0f380f] hover:bg-[#306230] text-[#9bbc0f] px-3 py-2 border-2 border-[#8bac0f] font-bold text-xs transition-all w-full"
+                      >
+                        LOG DRINK
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Shop Grid - ALWAYS 2 COLUMNS */}
-        <div className="bg-[#0f380f] border-4 border-[#306230] p-4 md:p-6 shadow-lg">
-          <h2 className="text-xl md:text-2xl font-bold text-[#9bbc0f] mb-4 tracking-wider">
-            TOP RATED
-          </h2>
-          <div className="grid grid-cols-2 gap-2 md:gap-4">
-            {shops.map((shop, index) => (
-              <div
-                key={shop.id}
-                className="bg-[#306230] border-3 border-[#8bac0f] p-3 md:p-4 hover:bg-[#0f380f] hover:border-[#9bbc0f] transition-colors"
-              >
-                <div className="mb-3">
-                  <div className="flex items-center gap-1 md:gap-2 mb-2 flex-wrap">
-                    <span className="text-[#9bbc0f] font-bold text-base md:text-xl">#{index + 1}</span>
-                    <h3 className="text-[#9bbc0f] font-bold text-xs md:text-sm">
-                      {shop.name}
-                    </h3>
-                    {visitedShops.includes(shop.id) && (
-                      <span className="text-sm md:text-base">🧋</span>
-                    )}
-                  </div>
-                  <div className="text-[#8bac0f] text-xs md:text-sm mb-1">
-                    {'★'.repeat(Math.floor(shop.rating))} {shop.rating}
-                  </div>
-                  <div className="text-[#8bac0f] text-[10px] md:text-xs">{shop.address}</div>
-                </div>
-                <button
-                  onClick={() => logDrink(shop.id)}
-                  className="bg-[#0f380f] hover:bg-[#306230] text-[#9bbc0f] px-2 md:px-4 py-2 border-2 border-[#8bac0f] font-bold text-xs md:text-sm transition-all w-full"
-                >
-                  LOG DRINK
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Fireworks Canvas */}
+        {showFireworks && (
+          <canvas
+            ref={fireworksRef}
+            className="fixed inset-0 pointer-events-none z-50"
+            style={{ background: 'transparent' }}
+          />
+        )}
 
         {/* Footer */}
         <div className="mt-4 text-center text-[#0f380f] text-xs">
